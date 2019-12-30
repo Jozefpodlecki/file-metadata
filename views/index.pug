@@ -1,0 +1,64 @@
+extends layout.pug
+
+block scripts
+  script.
+    const [ inputForm ] = document.forms
+    const inputDropBox = document.getElementById('inputDropBox');
+    const hiddenInputfield = document.getElementById('hiddenInputfield');
+    const uploadedFile = document.getElementById('uploadedFile');
+    const result = document.getElementById('result');
+    
+    hiddenInputfield.addEventListener('change', (event) => {
+      const [ file ] = event.target.files;
+      uploadedFile.innerText = file.name
+    });
+    
+    inputForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const elements = event.target.elements;
+      const [ file ] = elements.hiddenInputfield.files;
+      const url = '#{url}'
+      
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      fetch(`${url}api/fileanalyse`, {
+        method: 'POST',
+        body: formData
+      }).then(response => response.text())
+      .then(text => {
+        result.innerText = text;
+        hljs.highlightBlock(result);
+      })
+    })
+    
+    inputDropBox.addEventListener('click', () => {
+      hiddenInputfield.click();
+    })
+    
+block body
+  .container
+    h1.header APIs and Microservices Projects: #{title} Microservice
+    
+    .item
+      h3 Usage
+      .header
+        span.httpMethod.httpMethod--post POST
+        span.httpUrl #{url}api/fileanalyse
+      form(enctype="multipart/form-data")
+        div
+          input#hiddenInputfield(type="file" name="upfile")
+          #inputDropBox
+            i#inputDropBox__icon.fas.fa-upload.fa-3x
+            span#inputDropBox__header Choose file or drag it here
+            span#uploadedFile
+        input#submitButton(type="submit" value="Upload")
+      #result
+      
+    .item
+      h3 User Story
+      ol
+        li I can submit a form that includes a file upload.
+        li The form file input field has the "name" attribute set to "upfile". We rely on this in testing.
+        li When I submit something, I will receive the file name and size in bytes within the JSON response
+        
